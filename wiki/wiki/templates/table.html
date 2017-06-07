@@ -2,46 +2,13 @@
 {% block main %}
 <br>
 <br>
-<script> function select_name(name) {
-    document.getElementById("name_box").value=name;
-    } 
-
-
-</script>
-<script> function select_date(date) { 
-    document.getElementById("date_box").value=date;
-    }
-
-
-</script>
-<script> function select_entry(text) {
-    document.getElementById("entry_box").value=text;
-    }
-
-
-</script>
-
+<script type="text/javascript" src="{{ url_for('static', filename='javascripts/calendar.js') }}"></script>
 <head>
     <meta charset="UTF-8">
     <title>
         DRS Calendar {{ current_date }}
     </title>
-    <style>
-		table {
-			border-collapse: collapse;
-			border: 1px solid black;
-			text-align: center;
-			width: 100%;
-		}
-		th, td
-		{
-			border: 1px solid black;
-		}
-
-
-
-
-    </style>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/table.css') }}">
 </head>
 <body>
 <h1>DRS Calendar</h1>

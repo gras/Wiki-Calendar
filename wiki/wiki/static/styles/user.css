@@ -1,0 +1,22 @@
+table {
+	border-collapse: collapse;
+	border: 1px solid black;
+	text-align: center;
+	width: 100%;
+	}
+
+th, td {
+	border: 1px solid black;
+	}
+
+form {
+    display: inline;
+	}
+
+input {
+    display: inline;
+	}
+
+a {
+    color:blue; text-decoration:none;
+	}

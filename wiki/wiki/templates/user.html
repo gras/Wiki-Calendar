@@ -1,27 +1,6 @@
 {% extends "nav_bar.html" %}
 {% block main %}
-<style>
-		table {
-			border-collapse: collapse;
-			border: 1px solid black;
-			text-align: center;
-			width: 100%;
-		}
-		th, td
-		{
-			border: 1px solid black;
-		}
-		form {
-    		display: inline;
-		}
-		input {
-    		display: inline;
-		}
-		a {
-		    color:blue; text-decoration:none;
-		}
-
-</style>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/user.css') }}">
 <body>
 <br>
 <br>
