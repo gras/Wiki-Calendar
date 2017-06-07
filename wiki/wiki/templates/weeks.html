@@ -1,0 +1,17 @@
+{% extends "nav_bar.html" %}
+{% block main %}
+<style>
+    a { color:blue; text-decoration:none; }
+
+</style>
+<br>
+<br>
+<h1>Weeks</h1>
+{% for day in days %}
+{% if day == today %}
+- <a style="font-weight:bold; color:red;" href="{{ day }}">{{ day }}</a><br>
+{% else %}
+- <a href="{{ day }}">{{ day }}</a> <br>
+{% endif %}
+{% endfor %}
+{% endblock %}

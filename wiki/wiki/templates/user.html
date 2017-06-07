@@ -1,0 +1,60 @@
+{% extends "nav_bar.html" %}
+{% block main %}
+<style>
+		table {
+			border-collapse: collapse;
+			border: 1px solid black;
+			text-align: center;
+			width: 100%;
+		}
+		th, td
+		{
+			border: 1px solid black;
+		}
+		form {
+    		display: inline;
+		}
+		input {
+    		display: inline;
+		}
+		a {
+		    color:blue; text-decoration:none;
+		}
+
+</style>
+<body>
+<br>
+<br>
+<h1>DRS Member Report</h1>
+<h2>{{ user }}</h2>
+<h3>{{ table_data[1][1] }}</h3>
+<h4>{{ percent }} filled ({{not_empty}}/{{total_length}})</h4>
+<h4>{{ sub_percent }} filled up to today ({{sub_not_empty}}/{{sub_total_length}})</h4>
+{% if strikes == 0 %}
+{% elif strikes == 1 %}
+<h4>{{ strikes }} strike</h4>
+{% else %}
+<h4>{{ strikes }} strikes</h4>
+{% endif %}
+<br>
+<table>
+    <tr>
+        <th>Day</th>
+        <th>Entry</th>
+    </tr>
+    {% for x in range(2, table_data|length) %}
+    {% if days[x - 2] == today %}
+    <tr>
+        <td><a style="font-weight:bold; color:red;" href="/weeks/{{ days[x - 2] }}">{{ days[x - 2] }}</a></td>
+        <td style="{{ table_data[x][0] }}"> {{ table_data[x][1] }}</td>
+    </tr>
+    {% else %}
+    <tr>
+        <td><a href="/weeks/{{ days[x - 2] }}">{{ days[x - 2] }}</a></td>
+        <td style="{{ table_data[x][0] }}"> {{ table_data[x][1] }}</td>
+    </tr>
+    {% endif %}
+    {% endfor %}
+</table>
+</body>
+{% endblock %}

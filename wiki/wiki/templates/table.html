@@ -1,0 +1,97 @@
+{% extends "nav_bar.html" %}
+{% block main %}
+<br>
+<br>
+<script> function select_name(name) {
+    document.getElementById("name_box").value=name;
+    } 
+
+
+</script>
+<script> function select_date(date) { 
+    document.getElementById("date_box").value=date;
+    }
+
+
+</script>
+<script> function select_entry(text) {
+    document.getElementById("entry_box").value=text;
+    }
+
+
+</script>
+
+<head>
+    <meta charset="UTF-8">
+    <title>
+        DRS Calendar {{ current_date }}
+    </title>
+    <style>
+		table {
+			border-collapse: collapse;
+			border: 1px solid black;
+			text-align: center;
+			width: 100%;
+		}
+		th, td
+		{
+			border: 1px solid black;
+		}
+
+
+
+
+    </style>
+</head>
+<body>
+<h1>DRS Calendar</h1>
+<h2>Week of {{current_date}}</h2>
+<h4>
+    <a href="/today">(Today is {{today}})</a>
+</h4>
+<form action="/week/{{previous}}">
+    <input type="submit" value="Previous Week"/>
+</form>
+<form action="/week/{{next}}">
+    <input type="submit" value="Next Week"/>
+</form>
+<table>
+    <tbody>
+    {% for y in range(0, table_data|length) %}
+    <tr>
+        {% for x in range(0, table_data[y]|length) %}
+        {% if table_data[y][x] is not none and x < 1 and y > 1%}
+        <td onclick="select_name('{{table_data[y][x][1]}}')"> {{table_data[y][x][1] }}</td>
+        {% elif table_data[y][x] is not none and x > 1 and y < 1%}
+        <td onclick="select_date('{{table_data[y][x]}}')"> {{table_data[y][x] }}</td>
+        {% elif table_data[y][x] is not none and y < 2%}
+        <td>{{table_data[y][x]}}</td>
+        {% elif table_data[y][x][1] is not none and x > 1 %}
+        <td onclick="select_entry('{{ orig_text[y][x] }}'); select_date('{{ table_data[0][x] }}'); select_name('{{ table_data[y][0][1] }}');"
+            style="{{ table_data[y][x][0]}}"> {{table_data[y][x][1]}}
+        </td>
+        {% elif table_data[y][x][1] is not none %}
+        <td>{{table_data[y][x][1]}}</td>
+        {% else %}
+        <td> -</td>
+        {% endif %}
+        {% endfor %}
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<form action="{{ url_for('set_data', month=current_month, day=current_day, year=current_year) }}" method=post>
+    <br>
+    Name:
+    <input id=name_box type=text name=username readonly>
+    <br>
+    Date:
+    <input id=date_box type=text name='date' readonly>
+    <br>
+    Entry:
+    <input id=entry_box type=text name=entry size="40">
+    <br>
+    <input type="submit" value="Submit Change"/>
+</form>
+</body>
+{% endblock %}
