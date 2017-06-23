@@ -1,5 +1,4 @@
 import datetime as dt
-import logging
 import os
 import sqlite3
 from functools import wraps
@@ -132,6 +131,8 @@ def welcome():
 @app.route('/set/<int:month>-<int:day>-<int:year>/', methods=['POST', 'GET'])
 @requires_auth
 def set_data(month, day, year):
+    if month == "" and day == "" and year == "":
+        return today()
     if request.method == 'POST':
         username = request.form['username']
         date = request.form['date']
@@ -176,6 +177,9 @@ def set_data(month, day, year):
                 db.commit()
                 flash('Update successful!')
             except sqlite3.OperationalError:
+                log("error")
+                return today()
+            except Exception:
                 log("error")
                 return today()
         log("Changed {}@{} to '{}'".format(username, date, entry))
@@ -350,7 +354,7 @@ def report(user):
 @app.route("/changes/")
 def get_log():
     try:
-        with open("{}/log.log".format(ROOT_DIRECTORY), "r") as file:
+        with open("{}/history.log".format(ROOT_DIRECTORY), "r") as file:
             data = []
             text = file.read().split("\n")
             for x in range(len(text) - 1, -1, -1):
@@ -362,11 +366,9 @@ def get_log():
 
 def log(message):
     time = dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    filename = "{}/log.log".format(ROOT_DIRECTORY)
-    format = '%(time)s: %(message)s'
-    logging.basicConfig(filename=filename, format=format)
-    data = {'time': time}
-    logging.warning(message, extra=data)
+    filename = "{}/history.log".format(ROOT_DIRECTORY)
+    with open(filename, "a") as history:
+        history.write("{}: {}\n".format(time, message))
 
 
 # If a database does not exist, create one
