@@ -87,7 +87,7 @@ def close_db(error):
 def initdb_command():
     """Initializes the database."""
     init_db()
-    print('Initialized the database.')
+    # print('Initialized the database.')
 
 
 def init_db():
@@ -171,7 +171,7 @@ def set_data(month, day, year):
                         return today()
         else:
             command = '''UPDATE data SET "{}"="{}" WHERE name="{}"'''.format(date, entry, username)
-            print(command)
+            # print(command)
             try:
                 db.execute(command)
                 db.commit()
@@ -235,7 +235,7 @@ def display_days(month, day, year):
 
     query += ''' from data'''
 
-    print(query)
+    # print(query)
 
     table_data = [days, weekday, blank]
 
@@ -283,7 +283,8 @@ def users():
     all_users = db.execute('''SELECT "name" FROM data''').fetchall()
     for u in all_users:
         for uu in u:
-            u_list.append(uu)
+            if uu != "ANNOUNCEMENTS":
+                u_list.append(uu)
 
     return render_template('users.html', people=u_list)
 
@@ -321,9 +322,10 @@ def report(user):
     sub_total_length = 0.0
     sub_not_empty = 0.0
     strikes = 0
+    attended = 0
 
     for x in range(2, len(submit)):
-        print("{} {}".format(submit[x][1], DAYS_TEXT[x - 3]))
+        # print("{} {}".format(submit[x][1], DAYS_TEXT[x - 3]))
 
         if submit[x][1] is not None and "closed" not in submit[x][1].lower() and "x" not in submit[x][
             1].lower() and "gcer" not in submit[x][1].lower():
@@ -332,20 +334,26 @@ def report(user):
                 not_empty += 1
                 if "line-through" in submit[x][0].lower():
                     strikes += 1
+                elif "-" in submit[x][1] or "y" in submit[x][1].lower():
+                    attended += 1
         if DAYS_TEXT[x - 2] == today_date:
             sub_total_length = total_length
             sub_not_empty = not_empty
+            real_attended = attended
 
     percent = "{:.2f}%".format((not_empty / total_length) * 100)
 
     sub_percent = "{:.2f}%".format((sub_not_empty / sub_total_length) * 100)
 
-    print("not empty {} total length {} sub total length {} sub not empty {}".format(not_empty, total_length,
-                                                                                     sub_total_length, sub_not_empty))
+    at_percent = "{:.2f}%".format((real_attended / sub_total_length) * 100)
+
+    # print("not empty {} total length {} sub total length {} sub not empty {}".format(not_empty, total_length,
+    #                                                                                  sub_total_length, sub_not_empty))
 
     return render_template('user.html', user=user, table_data=submit, days=DAYS_TEXT, percent=percent, today=today_date,
                            sub_percent=sub_percent, not_empty=int(not_empty), total_length=int(total_length),
-                           sub_total_length=int(sub_total_length), sub_not_empty=int(sub_not_empty), strikes=strikes)
+                           sub_total_length=int(sub_total_length), sub_not_empty=int(sub_not_empty), strikes=strikes,
+                           at=real_attended, at_per=at_percent)
 
 
 @app.route("/log/")
