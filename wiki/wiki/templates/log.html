@@ -1,0 +1,12 @@
+{% extends "nav_bar.html" %}
+{% block main %}
+<br>
+<br>
+<body>
+<h1>DRS Log</h1>
+{% for entry in log %}
+<a>{{ entry }}</a>
+<br>
+{% endfor %}
+</body>
+{% endblock %}

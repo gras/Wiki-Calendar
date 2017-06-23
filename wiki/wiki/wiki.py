@@ -1,8 +1,10 @@
 import datetime as dt
+import logging
 import os
 import sqlite3
+from functools import wraps
 
-from flask import Flask, request, g, redirect, render_template, flash
+from flask import Flask, request, g, redirect, render_template, flash, Response
 
 ROOT_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -14,6 +16,7 @@ with open("{}/wiki.config".format(ROOT_DIRECTORY), "r") as file:
 
 START_DATE = dt.datetime(int(config[2]), int(config[0]), int(config[1]))
 END_DATE = dt.datetime(int(config[5]), int(config[3]), int(config[4]))
+PASSWORD = config[6]
 
 DAYS = []
 DAYS_TEXT = []
@@ -31,8 +34,31 @@ app.config.from_object(__name__)  # load config from this file
 # Load default config and override config from an environment variable
 app.config.update(dict(
     DATABASE=('{}/wiki-{}.db'.format(ROOT_DIRECTORY, START_DATE.strftime("%y"))),
-    SECRET_KEY='grayson is the best'
+    SECRET_KEY=os.urandom(24)  # generate a secret key
 ))
+
+
+def check_auth(password):
+    """This function is called to check if a username /
+    password combination is valid.
+    """
+    return password == PASSWORD
+
+
+def authenticate():
+    """Sends a 401 response that enables basic auth"""
+    return Response('Incorrect login :(', 401, {'WWW-Authenticate': 'Basic realm="Login Required"'})
+
+
+def requires_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth = request.authorization
+        if not auth or not check_auth(auth.password):
+            return authenticate()
+        return f(*args, **kwargs)
+
+    return decorated
 
 
 def connect_db():
@@ -84,6 +110,10 @@ def init_db():
     creation_text += ''')'''
     c.execute(creation_text)
 
+    this_command = '''INSERT INTO data ("name", "role") VALUES ("{}", "{}")'''.format("ANNOUNCEMENTS", "")
+    c.execute(this_command)
+    db.commit()
+
     with open("{}/people.config".format(ROOT_DIRECTORY)) as this_file:
         for this_line in this_file.read().split("\n"):
             this_info = this_line.split("\t")
@@ -100,6 +130,7 @@ def welcome():
 
 
 @app.route('/set/<int:month>-<int:day>-<int:year>/', methods=['POST', 'GET'])
+@requires_auth
 def set_data(month, day, year):
     if request.method == 'POST':
         username = request.form['username']
@@ -123,7 +154,8 @@ def set_data(month, day, year):
                     db.execute(command)
                     db.commit()
                 except sqlite3.OperationalError:
-                    print("error")
+                    log("error")
+                    return today()
 
         elif username == "*":
             all_users = db.execute('''SELECT "name" FROM data''').fetchall()
@@ -134,7 +166,8 @@ def set_data(month, day, year):
                         db.execute(command)
                         db.commit()
                     except sqlite3.OperationalError:
-                        print("error")
+                        log("error")
+                        return today()
         else:
             command = '''UPDATE data SET "{}"="{}" WHERE name="{}"'''.format(date, entry, username)
             print(command)
@@ -143,8 +176,9 @@ def set_data(month, day, year):
                 db.commit()
                 flash('Update successful!')
             except sqlite3.OperationalError:
-                print("error")
-
+                log("error")
+                return today()
+        log("Changed {}@{} to '{}'".format(username, date, entry))
     return redirect("/week/{}-{}-{}/".format(month, day, year))
 
 
@@ -308,6 +342,31 @@ def report(user):
     return render_template('user.html', user=user, table_data=submit, days=DAYS_TEXT, percent=percent, today=today_date,
                            sub_percent=sub_percent, not_empty=int(not_empty), total_length=int(total_length),
                            sub_total_length=int(sub_total_length), sub_not_empty=int(sub_not_empty), strikes=strikes)
+
+
+@app.route("/log/")
+@app.route("/logs/")
+@app.route("/history/")
+@app.route("/changes/")
+def get_log():
+    try:
+        with open("{}/log.log".format(ROOT_DIRECTORY), "r") as file:
+            data = []
+            text = file.read().split("\n")
+            for x in range(len(text) - 1, -1, -1):
+                data.append(text[x])
+    except FileNotFoundError:
+        data = ["No data"]
+    return render_template('log.html', log=data)
+
+
+def log(message):
+    time = dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    filename = "{}/log.log".format(ROOT_DIRECTORY)
+    format = '%(time)s: %(message)s'
+    logging.basicConfig(filename=filename, format=format)
+    data = {'time': time}
+    logging.warning(message, extra=data)
 
 
 # If a database does not exist, create one

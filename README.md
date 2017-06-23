@@ -10,8 +10,8 @@ Person_1	Software
 Person_2	Hardware
 ```
 
-### Setting Dates
-Enter the start and end day, month, and year into the `wiki.config` file.
+### Configuring the Dates and Password
+Enter the start and end day, month, and year into the `wiki.config` file. Also add a password.
 
 _Example:_
 ```
@@ -21,7 +21,11 @@ start_year=2017
 end_month=7
 end_day=12
 end_year=2017
+password=secret
 ```
+
+_Note: When using the calendar you will be prompted for both a username and a password. You can leave the username blank._
+
 
 ### Setting up Flask
 Install the Flask module for Python. 
