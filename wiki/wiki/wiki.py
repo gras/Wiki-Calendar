@@ -323,6 +323,7 @@ def report(user):
     sub_not_empty = 0.0
     strikes = 0
     attended = 0
+    hours = 0
 
     for x in range(2, len(submit)):
         # print("{} {}".format(submit[x][1], DAYS_TEXT[x - 3]))
@@ -334,12 +335,36 @@ def report(user):
                 not_empty += 1
                 if "line-through" in submit[x][0].lower():
                     strikes += 1
-                elif "-" in submit[x][1] or "y" in submit[x][1].lower():
+                elif "-" in submit[x][1]:
                     attended += 1
+
+                    try:
+                        split = submit[x][1].strip().split("-")
+                        if ":" in split[0]:
+                            temp = split[0].replace(";", ":").split(":")
+                            start_time = float(temp[0]) + (float(temp[1]) / 60.0)
+                        else:
+                            start_time = int(split[0])
+                        if ":" in split[1]:
+                            temp = split[1].replace(";", ":").split(":")
+                            end_time = float(temp[0]) + (float(temp[1]) / 60.0)
+                        else:
+                            end_time = int(split[1])
+                        hours += end_time - start_time
+                    except ValueError:
+                        pass
+                elif "y" in submit[x][1].lower():
+                    attended += 1
+                    weekday = DAYS[x - 2].weekday()
+                    if weekday == 5 or weekday == 6:
+                        hours += 4
+                    else:
+                        hours += 2.5
         if DAYS_TEXT[x - 2] == today_date:
             sub_total_length = total_length
             sub_not_empty = not_empty
             real_attended = attended
+            real_hours = hours
 
     percent = "{:.2f}%".format((not_empty / total_length) * 100)
 
@@ -347,13 +372,16 @@ def report(user):
 
     at_percent = "{:.2f}%".format((real_attended / sub_total_length) * 100)
 
+    show_hours = "{:.2f}".format(real_hours)
+    show_days = "{:.2f}".format(real_hours / 24)
+
     # print("not empty {} total length {} sub total length {} sub not empty {}".format(not_empty, total_length,
     #                                                                                  sub_total_length, sub_not_empty))
 
     return render_template('user.html', user=user, table_data=submit, days=DAYS_TEXT, percent=percent, today=today_date,
                            sub_percent=sub_percent, not_empty=int(not_empty), total_length=int(total_length),
                            sub_total_length=int(sub_total_length), sub_not_empty=int(sub_not_empty), strikes=strikes,
-                           at=real_attended, at_per=at_percent)
+                           at=real_attended, at_per=at_percent, show_hours=show_hours, show_days=show_days)
 
 
 @app.route("/log/")
